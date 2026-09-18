@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// role: OWNER | ADMIN | VIEWER
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         String
+  createdAt    DateTime @default(now())
+  lastLoginAt  DateTime?
+
+  createdOverrides       ScheduleOverride[] @relation("OverrideCreator")
+  createdManualOverrides ManualOverride[]   @relation("ManualOverrideCreator")
+  auditLogs              AuditLog[]
+  triggeredActivations   ActivationHistory[]
+  systemSettingsUpdated  SystemSetting[]
+}
+
+// automationMode: SIMULATION | LIVE
+model Store {
+  id                   String   @id @default(cuid())
+  shopifyDomain        String   @unique
+  timezone             String
+  automationMode       String   @default("SIMULATION")
+  automationPaused     Boolean  @default(false)
+  safeDefaultConfigId  String?
+  createdAt            DateTime @default(now())
+
+  safeDefaultConfig    PaymentConfiguration? @relation("SafeDefault", fields: [safeDefaultConfigId], references: [id])
+
+  configurations   PaymentConfiguration[] @relation("StoreConfigurations")
+  recurringRules   RecurringRule[]
+  scheduleOverrides ScheduleOverride[]
+  manualOverrides  ManualOverride[]
+  activationHistory ActivationHistory[]
+  auditLogs        AuditLog[]
+  errorLogs        ErrorLog[]
+  notifications    Notification[]
+  systemSettings   SystemSetting[]
+}
+
+// status: ACTIVE | INACTIVE | SUSPENDED
+// connectionStatus: CONNECTED | DISCONNECTED | ERROR
+// eligibilityStatus: ELIGIBLE | INELIGIBLE
+model PaymentConfiguration {
+  id                    String    @id @default(cuid())
+  storeId               String
+  internalName          String
+  paypalMerchantId      String
+  credentialRef         String
+  status                String    @default("ACTIVE")
+  connectionStatus      String    @default("DISCONNECTED")
+  eligibilityStatus     String    @default("INELIGIBLE")
+  lastActivatedAt       DateTime?
+  lastHealthCheckAt     DateTime?
+  lastHealthCheckResult String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  store Store @relation("StoreConfigurations", fields: [storeId], references: [id])
+  safeDefaultFor    Store[]            @relation("SafeDefault")
+  recurringRules    RecurringRule[]
+  scheduleOverrides ScheduleOverride[]
+  manualOverrides   ManualOverride[]
+  activationHistory ActivationHistory[]
+  errorLogs         ErrorLog[]
+
+  @@index([storeId])
+}
+
+model RecurringRule {
+  id        String  @id @default(cuid())
+  storeId   String
+  dayOfWeek Int // 0=Sunday .. 6=Saturday
+  startTime String // "HH:mm", store timezone wall clock
+  endTime   String // "HH:mm"
+  configId  String
+  active    Boolean @default(true)
+  createdAt DateTime @default(now())
+
+  store  Store                @relation(fields: [storeId], references: [id])
+  config PaymentConfiguration @relation(fields: [configId], references: [id])
+
+  @@index([storeId, dayOfWeek])
+}
+
+model ScheduleOverride {
+  id        String   @id @default(cuid())
+  storeId   String
+  startAt   DateTime // UTC
+  endAt     DateTime // UTC
+  configId  String
+  reason    String?
+  createdById String?
+  createdAt DateTime @default(now())
+
+  store     Store                @relation(fields: [storeId], references: [id])
+  config    PaymentConfiguration @relation(fields: [configId], references: [id])
+  createdBy User?                @relation("OverrideCreator", fields: [createdById], references: [id])
+
+  @@index([storeId, startAt, endAt])
+}
+
+// expiryMode: FIXED_DURATION | UNTIL_NEXT_SCHEDULE | UNTIL_DISABLED
+model ManualOverride {
+  id           String    @id @default(cuid())
+  storeId      String
+  configId     String
+  startedAt    DateTime  @default(now())
+  expiresAt    DateTime?
+  expiryMode   String
+  createdById  String?
+  active       Boolean   @default(true)
+  endedAt      DateTime?
+  endedReason  String?
+
+  store     Store                @relation(fields: [storeId], references: [id])
+  config    PaymentConfiguration @relation(fields: [configId], references: [id])
+  createdBy User?                @relation("ManualOverrideCreator", fields: [createdById], references: [id])
+
+  // Enforces the single-active-configuration rule: only one active manual
+  // override per store at a time (partial-unique equivalent; see README).
+  @@index([storeId, active])
+}
+
+// reason: RECURRING | ONE_TIME_OVERRIDE | MANUAL_OVERRIDE | SAFE_DEFAULT | STARTUP_RECONCILE
+// result: SUCCESS | FAILED | ROLLED_BACK
+model ActivationHistory {
+  id             String    @id @default(cuid())
+  storeId        String
+  configId       String
+  activatedAt    DateTime  @default(now())
+  deactivatedAt  DateTime?
+  reason         String
+  triggeredById  String?
+  result         String
+  scheduledFor   DateTime? // for idempotency keying on scheduled transitions
+
+  store       Store                @relation(fields: [storeId], references: [id])
+  config      PaymentConfiguration @relation(fields: [configId], references: [id])
+  triggeredBy User?                @relation(fields: [triggeredById], references: [id])
+
+  // Idempotency: re-running the same scheduled transition is a no-op.
+  @@unique([storeId, configId, scheduledFor])
+  @@index([storeId, activatedAt])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  storeId     String
+  actorId     String?
+  action      String
+  targetType  String
+  targetId    String?
+  beforeState String? // JSON-encoded
+  afterState  String? // JSON-encoded
+  createdAt   DateTime @default(now())
+
+  store Store @relation(fields: [storeId], references: [id])
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([storeId, createdAt])
+}
+
+model ErrorLog {
+  id             String   @id @default(cuid())
+  storeId        String
+  configId       String?
+  operation      String
+  errorCode      String
+  errorMessage   String
+  retryCount     Int      @default(0)
+  finalResult    String
+  rollbackResult String?
+  createdAt      DateTime @default(now())
+
+  store  Store                 @relation(fields: [storeId], references: [id])
+  config PaymentConfiguration? @relation(fields: [configId], references: [id])
+
+  @@index([storeId, createdAt])
+}
+
+// channel: EMAIL | SLACK | WEBHOOK
+model Notification {
+  id             String   @id @default(cuid())
+  storeId        String
+  channel        String
+  eventType      String
+  payload        String // JSON-encoded
+  sentAt         DateTime?
+  deliveryStatus String   @default("PENDING")
+  createdAt      DateTime @default(now())
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId, createdAt])
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  storeId     String
+  key         String
+  value       String // JSON-encoded
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+
+  store     Store @relation(fields: [storeId], references: [id])
+  updatedBy User? @relation(fields: [updatedById], references: [id])
+
+  @@unique([storeId, key])
+}

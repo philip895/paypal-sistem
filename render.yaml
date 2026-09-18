@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: paypal-routing-console
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    preDeployCommand: npx prisma migrate deploy
+    startCommand: npm run start
+    healthCheckPath: /login
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # paste your Neon connection string here in the Render dashboard
+      - key: SESSION_SECRET
+        generateValue: true # Render generates a strong random value itself
