@@ -111,10 +111,40 @@ npm test
 
 ## Notifications
 
-Events (manual override started, etc.) are recorded in the `Notification`
-table and visible under Notifications, but delivery to email/Slack/webhook
-is stubbed (`deliveryStatus` stays `PENDING`) — wire a real sender in
-`src/lib/audit.ts`'s `writeNotification` when a channel is available.
+Two live alert channels, both free:
+
+- **Email**, via your own Gmail account (nodemailer + Gmail SMTP — no
+  third-party email service or domain verification needed).
+- **Push**, via [ntfy.sh](https://ntfy.sh) (no account needed — install the
+  free ntfy app and subscribe to your topic to get phone notifications).
+
+A scheduled [GitHub Actions workflow](.github/workflows/schedule-check.yml)
+pings `/api/cron/check-schedule` every 5 minutes (there's no always-on
+background worker on the free hosting tier, so this is what actually
+triggers the check). It notifies once when a switch becomes due, and once
+more — urgently — if it's still unconfirmed 15 minutes later, then stays
+quiet until you confirm it.
+
+**Setup (all free, no card anywhere):**
+
+1. **Gmail App Password**: in your Google Account → Security → 2-Step
+   Verification (must be enabled first) → App passwords → create one for
+   "Mail". Set it as `GMAIL_APP_PASSWORD` in Render's environment variables,
+   along with `GMAIL_USER` (that Gmail address) and `ALERT_EMAIL_TO` (where
+   alerts should land — can be the same address).
+2. **ntfy push**: install the ntfy app (iOS/Android) or open ntfy.sh in a
+   browser, and subscribe to the topic name set in `NTFY_TOPIC` (treat it
+   like a password — it's a random string specifically so strangers can't
+   guess it and subscribe to your alerts).
+3. **Cron secret**: set `CRON_SECRET` to the same random value in both
+   Render's environment variables and this GitHub repo's Settings → Secrets
+   and variables → Actions (as `CRON_SECRET`), plus `APP_URL` there too
+   (your Render URL, e.g. `https://paypal-routing-console.onrender.com`,
+   no trailing slash). This is what stops randoms from hitting the endpoint
+   and spamming your phone/inbox.
+
+Any channel left unconfigured is simply skipped — the app doesn't require
+all three.
 
 ## Timezone
 

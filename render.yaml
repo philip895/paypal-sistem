@@ -11,3 +11,13 @@ services:
         sync: false # paste your Neon connection string here in the Render dashboard
       - key: SESSION_SECRET
         generateValue: true # Render generates a strong random value itself
+      - key: CRON_SECRET
+        sync: false # shared secret that must also be set as a GitHub Actions repo secret
+      - key: GMAIL_USER
+        sync: false # the Gmail address alerts are sent FROM (needs an App Password, not the normal password)
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: ALERT_EMAIL_TO
+        sync: false # the email address alerts are sent TO
+      - key: NTFY_TOPIC
+        sync: false # a long, unguessable topic name for ntfy.sh push alerts

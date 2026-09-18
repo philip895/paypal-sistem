@@ -6,6 +6,7 @@ const CHANNEL_LABELS: Record<string, string> = {
   EMAIL: "Email",
   SLACK: "Slack",
   WEBHOOK: "Webhook",
+  PUSH: "Notifica push",
 };
 
 const DELIVERY_LABELS: Record<string, string> = {
