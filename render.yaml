@@ -4,8 +4,7 @@ services:
     runtime: node
     plan: free
     buildCommand: npm ci && npm run build
-    preDeployCommand: npx prisma migrate deploy
-    startCommand: npm run start
+    startCommand: npx prisma migrate deploy && npm run start
     healthCheckPath: /login
     envVars:
       - key: NODE_ENV
