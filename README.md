@@ -70,7 +70,9 @@ needs instant response at 3am.
 1. **Database — Neon** (https://neon.tech): sign up free, create a project,
    copy the connection string it gives you (starts `postgresql://...`).
    Keep it somewhere private — you'll paste it directly into Render in step 3,
-   not into any file that gets committed.
+   not into any file that gets committed. **Use the direct connection string,
+   not the pooled one** (the one *without* `-pooler` in the hostname) — see
+   the troubleshooting note below for why.
 2. **Code — GitHub**: create a private repository and push this project to
    it (`git init` is already done here; `git add -A && git commit -m
    "Initial commit"`, then follow GitHub's instructions to add the remote
@@ -88,6 +90,32 @@ needs instant response at 3am.
 5. Share the Render URL with whoever needs access, and create their
    accounts via Settings → Users with the right role (OWNER/ADMIN/VIEWER).
    The link alone doesn't grant access — login is still required.
+
+### Troubleshooting: deploy fails with "Timed out trying to acquire a
+### postgres advisory lock" (error P1002)
+
+This happens when `DATABASE_URL` is Neon's **pooled** connection (hostname
+contains `-pooler`). `prisma migrate deploy` takes a session-scoped advisory
+lock while it runs; if a deploy is killed or times out mid-migration, the
+pooler can leave that lock stuck on a backend connection that never gets
+cleaned up, which then wedges every future migration attempt (including
+against the direct URL, since the lock is now held server-side, not a
+client-side pooling artifact).
+
+Fix: switch `DATABASE_URL` to the **direct** (unpooled) connection string —
+same value, minus `-pooler` in the hostname. This app runs as a single
+process (`WEB_CONCURRENCY=1` on Render's free tier), so there's no
+connection-pooling benefit being given up.
+
+If it's already wedged, clear the stuck lock directly against the database:
+
+```sql
+SELECT l.pid, a.query
+FROM pg_locks l LEFT JOIN pg_stat_activity a ON a.pid = l.pid
+WHERE l.locktype = 'advisory';
+-- then, for the pid found:
+SELECT pg_terminate_backend(<pid>);
+```
 
 Seeded login: the email in `SEED_OWNER_EMAIL` (defaults to
 `pierlucafranzone@gmail.com`) with password `changeme123` — **change this
