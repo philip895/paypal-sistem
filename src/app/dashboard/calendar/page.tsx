@@ -52,7 +52,7 @@ export default async function CalendarPage({
     ...windows.map((w) => ({
       start: w.startUtc,
       end: w.endUtc,
-      label: configById.get(w.rule.configId)?.internalName ?? "Unknown",
+      label: configById.get(w.rule.configId)?.internalName ?? "Sconosciuta",
       kind: "recurring" as const,
     })),
     ...overrides.map((o) => ({ start: o.startAt, end: o.endAt, label: o.config.internalName, kind: "override" as const })),
@@ -79,10 +79,12 @@ export default async function CalendarPage({
   const prevAnchor = start.minus(view === "day" ? { days: 1 } : view === "month" ? { months: 1 } : { weeks: 1 });
   const nextAnchor = start.plus(view === "day" ? { days: 1 } : view === "month" ? { months: 1 } : { weeks: 1 });
 
+  const viewLabels: Record<ViewMode, string> = { day: "Giorno", week: "Settimana", month: "Mese" };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-900">Calendar</h1>
+        <h1 className="text-2xl font-semibold text-slate-900">Calendario</h1>
         <div className="flex gap-2 text-sm">
           {(["day", "week", "month"] as ViewMode[]).map((v) => (
             <Link
@@ -90,7 +92,7 @@ export default async function CalendarPage({
               href={`/dashboard/calendar?view=${v}&date=${anchor.toFormat("yyyy-LL-dd")}`}
               className={`rounded-md px-2 py-1 ${v === view ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-700"}`}
             >
-              {v[0].toUpperCase() + v.slice(1)}
+              {viewLabels[v]}
             </Link>
           ))}
         </div>
@@ -98,20 +100,21 @@ export default async function CalendarPage({
 
       <div className="flex items-center justify-between text-sm">
         <Link href={`/dashboard/calendar?view=${view}&date=${prevAnchor.toFormat("yyyy-LL-dd")}`} className="text-slate-500 hover:underline">
-          ← Previous
+          ← Precedente
         </Link>
         <span className="font-medium text-slate-900">
-          {start.toFormat("d LLL yyyy")} – {end.toFormat("d LLL yyyy")}
+          {start.setLocale("it").toFormat("d LLL yyyy")} – {end.setLocale("it").toFormat("d LLL yyyy")}
         </span>
         <Link href={`/dashboard/calendar?view=${view}&date=${nextAnchor.toFormat("yyyy-LL-dd")}`} className="text-slate-500 hover:underline">
-          Next →
+          Successivo →
         </Link>
       </div>
 
       {conflicts.size > 0 && (
         <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-900">
-          SCHEDULE CONFLICT detected in this range — an override and recurring window overlap. Priority
-          rules resolve routing (override wins), but review this for correctness.
+          CONFLITTO DI PROGRAMMAZIONE rilevato in questo intervallo — un&rsquo;eccezione e una finestra
+          ricorrente si sovrappongono. Le regole di priorità risolvono comunque l&rsquo;instradamento
+          (l&rsquo;eccezione prevale), ma è bene verificare.
         </div>
       )}
 
@@ -119,7 +122,7 @@ export default async function CalendarPage({
         {[...byDay.entries()].map(([day, dayEntries]) => (
           <div key={day} className="rounded-lg border border-slate-200 bg-white p-4">
             <p className="text-sm font-semibold text-slate-900">
-              {DateTime.fromFormat(day, "yyyy-LL-dd").toFormat("EEEE d LLLL")}
+              {DateTime.fromFormat(day, "yyyy-LL-dd").setLocale("it").toFormat("EEEE d LLLL")}
             </p>
             <ul className="mt-2 space-y-1">
               {dayEntries.map((e, i) => {
@@ -131,14 +134,14 @@ export default async function CalendarPage({
                         e.kind === "override" ? "bg-blue-100 text-blue-800" : "bg-slate-100 text-slate-700"
                       }`}
                     >
-                      {e.kind === "override" ? "Override" : "Recurring"}
+                      {e.kind === "override" ? "Eccezione" : "Ricorrente"}
                     </span>
                     <span>
                       {DateTime.fromJSDate(e.start).setZone(store.timezone).toFormat("HH:mm")}–
                       {DateTime.fromJSDate(e.end).setZone(store.timezone).toFormat("HH:mm")} {e.label}
                     </span>
                     {conflicts.has(globalIndex) && (
-                      <span className="text-xs font-medium text-red-600">CONFLICT</span>
+                      <span className="text-xs font-medium text-red-600">CONFLITTO</span>
                     )}
                   </li>
                 );
@@ -146,7 +149,7 @@ export default async function CalendarPage({
             </ul>
           </div>
         ))}
-        {byDay.size === 0 && <p className="text-sm text-slate-400">Nothing scheduled in this range.</p>}
+        {byDay.size === 0 && <p className="text-sm text-slate-400">Nessun evento programmato in questo intervallo.</p>}
       </div>
     </div>
   );

@@ -9,10 +9,10 @@ export function AutomationModeForm({ current }: { current: string }) {
   function handleChange(mode: string) {
     if (mode === "LIVE") {
       const ok = window.confirm(
-        "Switching to LIVE means the system will treat resolved switches as real routing decisions. " +
-          "On this account's current plan there is no live Payments App connection, so this only changes " +
-          "how seriously overdue switches are treated — it does NOT make Shopify checkout routing automatic. " +
-          "Continue?"
+        "Passare a LIVE significa che il sistema tratterà i passaggi risolti come decisioni di instradamento reali. " +
+          "Con il piano attuale di questo account non esiste una connessione Payments App live, quindi questo cambia solo " +
+          "quanto seriamente vengono trattati i passaggi in ritardo — NON rende automatico l'instradamento del checkout Shopify. " +
+          "Continuare?"
       );
       if (!ok) return;
     }

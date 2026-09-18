@@ -17,12 +17,12 @@ export function ScheduleOverrideForm({ configs }: { configs: { id: string; inter
       </select>
       <input type="datetime-local" name="startAt" required className="rounded-md border border-slate-300 px-2 py-1.5 text-sm" />
       <input type="datetime-local" name="endAt" required className="rounded-md border border-slate-300 px-2 py-1.5 text-sm" />
-      <input name="reason" placeholder="Reason (optional)" className="rounded-md border border-slate-300 px-2 py-1.5 text-sm" />
+      <input name="reason" placeholder="Motivo (facoltativo)" className="rounded-md border border-slate-300 px-2 py-1.5 text-sm" />
       <button
         disabled={pending}
         className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
       >
-        {pending ? "Checking conflicts..." : "Add override"}
+        {pending ? "Verifica conflitti..." : "Aggiungi eccezione"}
       </button>
       {state?.error && <p className="col-span-full text-sm text-red-600">{state.error}</p>}
     </form>

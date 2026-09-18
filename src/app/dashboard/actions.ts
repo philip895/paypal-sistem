@@ -83,7 +83,7 @@ export async function startEmergencyOverrideAction(formData: FormData) {
 
   const configId = String(formData.get("configId") || "");
   const durationChoice = String(formData.get("duration") || "1h");
-  if (!configId) throw new Error("A configuration must be selected.");
+  if (!configId) throw new Error("È necessario selezionare una configurazione.");
 
   const now = new Date();
   let expiresAt: Date | null = null;

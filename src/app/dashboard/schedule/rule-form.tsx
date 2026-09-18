@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { createRecurringRuleAction } from "./actions";
 
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const DAYS = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
 
 export function RecurringRuleForm({ configs }: { configs: { id: string; internalName: string }[] }) {
   const [state, formAction, pending] = useActionState(createRecurringRuleAction, undefined);
@@ -30,7 +30,7 @@ export function RecurringRuleForm({ configs }: { configs: { id: string; internal
         disabled={pending}
         className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
       >
-        {pending ? "Checking conflicts..." : "Add rule"}
+        {pending ? "Verifica conflitti..." : "Aggiungi regola"}
       </button>
       {state?.error && <p className="col-span-full text-sm text-red-600">{state.error}</p>}
     </form>

@@ -41,7 +41,7 @@ export function resolveCurrentConfiguration(input: ResolutionInput): ResolvedCon
     return {
       configId: activeManual.configId,
       source: "MANUAL_OVERRIDE",
-      reason: "Manual override",
+      reason: "Eccezione manuale",
       sourceId: activeManual.id,
       activeSince: activeManual.startedAt,
       activeUntil,
@@ -60,7 +60,7 @@ function resolveWithoutManualOverride(input: ResolutionInput): ResolvedConfigura
     return {
       configId: activeOverride.configId,
       source: "ONE_TIME_OVERRIDE",
-      reason: "One-time schedule override",
+      reason: "Eccezione una tantum",
       sourceId: activeOverride.id,
       activeSince: activeOverride.startAt,
       activeUntil: activeOverride.endAt,
@@ -78,7 +78,7 @@ function resolveWithoutManualOverride(input: ResolutionInput): ResolvedConfigura
     return {
       configId: chosen.rule.configId,
       source: "RECURRING",
-      reason: "Recurring schedule",
+      reason: "Programmazione ricorrente",
       sourceId: chosen.rule.id,
       activeSince: chosen.startUtc,
       activeUntil: chosen.endUtc,
@@ -90,7 +90,7 @@ function resolveWithoutManualOverride(input: ResolutionInput): ResolvedConfigura
     return {
       configId: safeDefaultConfigId,
       source: "SAFE_DEFAULT",
-      reason: "Safe default configuration (no schedule covers this time)",
+      reason: "Configurazione predefinita di sicurezza (nessuna programmazione copre questo orario)",
       sourceId: null,
       activeSince: null,
       activeUntil: nextRecurringBoundaryAfter(now, recurringRules, timezone),
@@ -100,7 +100,7 @@ function resolveWithoutManualOverride(input: ResolutionInput): ResolvedConfigura
   return {
     configId: null,
     source: "NONE",
-    reason: "No valid configuration could be resolved",
+    reason: "Impossibile determinare una configurazione valida",
     sourceId: null,
     activeSince: null,
     activeUntil: null,

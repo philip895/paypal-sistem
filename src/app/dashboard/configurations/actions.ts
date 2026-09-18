@@ -15,7 +15,7 @@ export async function createConfigurationAction(formData: FormData) {
   const credentialRef = String(formData.get("credentialRef") || "").trim();
 
   if (!internalName || !paypalMerchantId || !credentialRef) {
-    throw new Error("Internal name, merchant identifier, and credential reference are required.");
+    throw new Error("Nome interno, ID commerciante e riferimento credenziale sono obbligatori.");
   }
 
   const config = await prisma.paymentConfiguration.create({

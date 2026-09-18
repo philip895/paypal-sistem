@@ -9,8 +9,8 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-lg font-semibold text-slate-900">PayPal Routing Console</h1>
-        <p className="mt-1 text-sm text-slate-500">Sign in to manage payment configuration schedules.</p>
+        <h1 className="text-lg font-semibold text-slate-900">Console di Instradamento PayPal</h1>
+        <p className="mt-1 text-sm text-slate-500">Accedi per gestire i programmi di configurazione dei pagamenti.</p>
 
         <form action={formAction} className="mt-6 space-y-4">
           <div>
@@ -45,7 +45,7 @@ export default function LoginPage() {
             disabled={pending}
             className="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
           >
-            {pending ? "Signing in..." : "Sign in"}
+            {pending ? "Accesso in corso..." : "Accedi"}
           </button>
         </form>
       </div>

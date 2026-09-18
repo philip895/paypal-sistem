@@ -2,13 +2,13 @@ import { getSession, hasAtLeastRole } from "./auth";
 import type { Role } from "./scheduling/types";
 
 export class UnauthorizedError extends Error {
-  constructor(message = "Not authenticated") {
+  constructor(message = "Non autenticato") {
     super(message);
   }
 }
 
 export class ForbiddenError extends Error {
-  constructor(message = "Insufficient permissions") {
+  constructor(message = "Permessi insufficienti") {
     super(message);
   }
 }

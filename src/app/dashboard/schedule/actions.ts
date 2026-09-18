@@ -21,10 +21,10 @@ export async function createRecurringRuleAction(
   const configId = String(formData.get("configId") || "");
 
   if (!configId || !/^\d{2}:\d{2}$/.test(startTime) || !/^\d{2}:\d{2}$/.test(endTime)) {
-    return { error: "A configuration, start time, and end time are required." };
+    return { error: "Configurazione, orario di inizio e orario di fine sono obbligatori." };
   }
   if (startTime === endTime) {
-    return { error: "Start and end time can't be identical (that's either a 24-hour or zero-length window)." };
+    return { error: "Gli orari di inizio e fine non possono coincidere (sarebbe una finestra di 24 ore o di durata nulla)." };
   }
 
   const existing = await prisma.recurringRule.findMany({ where: { storeId: store.id, active: true } });
@@ -49,7 +49,7 @@ export async function createRecurringRuleAction(
   const conflicts = findRecurringConflicts(candidate, existingRecords, store.timezone);
   if (conflicts.length > 0) {
     return {
-      error: `SCHEDULE CONFLICT: overlaps with ${conflicts.length} existing rule(s) on this day. Adjust the times first.`,
+      error: `CONFLITTO DI PROGRAMMAZIONE: si sovrappone a ${conflicts.length} regola/e esistente/i nello stesso giorno. Modifica prima gli orari.`,
     };
   }
 

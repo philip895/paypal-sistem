@@ -20,7 +20,7 @@ export async function createScheduleOverrideAction(
   const reason = String(formData.get("reason") || "").trim() || null;
 
   if (!configId || !startAtLocal || !endAtLocal) {
-    return { error: "Configuration, start, and end are required." };
+    return { error: "Configurazione, inizio e fine sono obbligatori." };
   }
 
   // datetime-local inputs are naive wall-clock strings in the store's timezone.
@@ -29,7 +29,7 @@ export async function createScheduleOverrideAction(
   const endAt = DateTime.fromISO(endAtLocal, { zone: store.timezone }).toUTC().toJSDate();
 
   if (endAt <= startAt) {
-    return { error: "End must be after start." };
+    return { error: "La fine deve essere successiva all'inizio." };
   }
 
   const existing = await prisma.scheduleOverride.findMany({
@@ -41,7 +41,7 @@ export async function createScheduleOverrideAction(
     existing.map((o) => ({ id: o.id, configId: o.configId, startAt: o.startAt, endAt: o.endAt }))
   );
   if (conflicts.length > 0) {
-    return { error: `SCHEDULE CONFLICT: overlaps with ${conflicts.length} existing override(s).` };
+    return { error: `CONFLITTO DI PROGRAMMAZIONE: si sovrappone a ${conflicts.length} eccezione/i esistente/i.` };
   }
 
   const override = await prisma.scheduleOverride.create({

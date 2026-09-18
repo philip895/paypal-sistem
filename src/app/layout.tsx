@@ -13,14 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PayPal Routing Console",
-  description: "Schedule-driven PayPal payment configuration routing for Shopify.",
+  title: "Console di Instradamento PayPal",
+  description: "Instradamento programmato delle configurazioni di pagamento PayPal per Shopify.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="it"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

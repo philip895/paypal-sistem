@@ -10,12 +10,12 @@ export async function loginAction(_prevState: { error?: string } | undefined, fo
   const password = String(formData.get("password") || "");
 
   if (!email || !password) {
-    return { error: "Email and password are required." };
+    return { error: "Email e password sono obbligatorie." };
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
-    return { error: "Invalid email or password." };
+    return { error: "Email o password non validi." };
   }
 
   await setSessionCookie({ userId: user.id, role: user.role as Role, email: user.email });

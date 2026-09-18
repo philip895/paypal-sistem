@@ -58,11 +58,11 @@ export async function createUserAction(
   const role = String(formData.get("role") || "VIEWER") as Role;
 
   if (!email || password.length < 8) {
-    return { error: "Email and an 8+ character password are required." };
+    return { error: "Email e una password di almeno 8 caratteri sono obbligatori." };
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return { error: "A user with that email already exists." };
+  if (existing) return { error: "Esiste già un utente con questa email." };
 
   const user = await prisma.user.create({
     data: { email, passwordHash: await hashPassword(password), role },

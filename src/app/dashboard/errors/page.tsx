@@ -2,6 +2,12 @@ import { DateTime } from "luxon";
 import { getCurrentStore } from "@/lib/store";
 import { prisma } from "@/lib/db";
 
+const RESULT_LABELS: Record<string, string> = {
+  SUCCESS: "Riuscito",
+  FAILED: "Non riuscito",
+  ROLLED_BACK: "Annullato (rollback)",
+};
+
 export default async function ErrorsPage() {
   const store = await getCurrentStore();
   const errors = await prisma.errorLog.findMany({
@@ -13,20 +19,20 @@ export default async function ErrorsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-slate-900">Errors</h1>
+      <h1 className="text-2xl font-semibold text-slate-900">Errori</h1>
       {errors.length === 0 ? (
-        <p className="text-sm text-slate-400">No errors recorded — that&rsquo;s a good sign.</p>
+        <p className="text-sm text-slate-400">Nessun errore registrato — è un buon segno.</p>
       ) : (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
           <table className="min-w-full divide-y divide-slate-200 text-sm">
             <thead className="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-4 py-2">Time</th>
-                <th className="px-4 py-2">Configuration</th>
-                <th className="px-4 py-2">Operation</th>
-                <th className="px-4 py-2">Error</th>
-                <th className="px-4 py-2">Retries</th>
-                <th className="px-4 py-2">Result</th>
+                <th className="px-4 py-2">Orario</th>
+                <th className="px-4 py-2">Configurazione</th>
+                <th className="px-4 py-2">Operazione</th>
+                <th className="px-4 py-2">Errore</th>
+                <th className="px-4 py-2">Tentativi</th>
+                <th className="px-4 py-2">Esito</th>
                 <th className="px-4 py-2">Rollback</th>
               </tr>
             </thead>
@@ -42,8 +48,8 @@ export default async function ErrorsPage() {
                     {e.errorCode}: {e.errorMessage}
                   </td>
                   <td className="px-4 py-2 text-xs">{e.retryCount}</td>
-                  <td className="px-4 py-2 text-xs font-medium text-red-700">{e.finalResult}</td>
-                  <td className="px-4 py-2 text-xs">{e.rollbackResult ?? "—"}</td>
+                  <td className="px-4 py-2 text-xs font-medium text-red-700">{RESULT_LABELS[e.finalResult] ?? e.finalResult}</td>
+                  <td className="px-4 py-2 text-xs">{e.rollbackResult ? (RESULT_LABELS[e.rollbackResult] ?? e.rollbackResult) : "—"}</td>
                 </tr>
               ))}
             </tbody>
